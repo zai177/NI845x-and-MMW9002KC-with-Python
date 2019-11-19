@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider, Button, RadioButtons
+from matplotlib.widgets import Slider, Button, RadioButtons, TextBox
 import mpl_toolkits.mplot3d.axes3d as axes3d
 from  ipywidgets import widgets
 
@@ -37,16 +37,20 @@ def find_phase_forTheta(t):
     phase = 0
     dy =  8.3 / 2
     d = np.sqrt(dx ** 2 + dy ** 2)/1000
-    x = 2 * np.arctan(8.3 / 5.3) - np.pi / 2
+    x =  2 * np.arctan(8.3 / 5.3) - np.pi / 2
     p = samp2.val*np.pi/180
-    maxPhase = 2*k*d*np.sin(t*np.pi/180) * np.sin(p)
+    maxPhase = k*d*np.sin(t*np.pi/180) * np.sin(p)
     YZPhase = round(maxPhase/stepsize)*stepsize
-    maxPhase = 2*k * d * np.sin(t*np.pi/180)*np.cos(p-x)
+    maxPhase = k * d * np.sin(t*np.pi/180)*np.cos(p-x)
     XZPhase = round(maxPhase/stepsize)*stepsize
-    AF = np.exp(1j * phase) * np.exp(1j * k * d * np.sin(theta) * np.sin(p)) + \
-         np.exp(1j * YZPhase) * np.exp(-1j * k * d * np.sin(theta) * np.sin(p))  +\
-         np.exp(1j * phase) * np.exp(1j * k * d * np.sin(theta)*np.cos(p-x))+ \
-         np.exp(1j * XZPhase) * np.exp(-1j * k * d * np.sin(theta)*np.cos(p-x))
+    s = 2.2/1000
+    AF = (np.exp(-1j * YZPhase) * np.exp(1j * k * d * np.sin(theta) * np.sin(p)) + \
+         np.exp(1j * YZPhase) * np.exp(-1j * k * d * np.sin(theta) * np.sin(p)) + \
+         np.exp(-1j * XZPhase) * np.exp(1j * k * d * np.sin(theta) * np.cos(p - x)) + \
+         np.exp(1j * XZPhase) * np.exp(-1j * k * d * np.sin(theta) * np.cos(p - x)))*\
+         (np.sqrt((np.sinc(.5*k*s*np.sin(theta)*np.sin(p))*np.cos(k*s*np.sin(theta)*np.cos(p)/2)*np.cos(p))**2 + \
+                 (np.sinc(.5 * k * s * np.sin(theta) * np.sin(p)) * np.cos(
+                     k * s * np.sin(theta) * np.cos(p) / 2) * np.cos(theta)*np.sin(p)) ** 2))
     line.set_xdata(theta)
     line.set_ydata(np.absolute(AF/4))
     text.set_text('XZPhase = ' + str(round(XZPhase,2))+'\nYZPhase = ' + str(round(YZPhase,2))+"\nfor Main lobet at Theta : "+str(round(t,2)))
@@ -65,18 +69,22 @@ def create_3d(*args, **kwargs ):
     d = np.sqrt(dx ** 2 + dy ** 2) / 1000
     x =2 * np.arctan(8.3 / 5.3) - np.pi / 2
     p = samp2.val * np.pi / 180
-    maxPhase = 2 * k * d * np.sin(t * np.pi / 180) * np.sin(p)
+    maxPhase = k * d * np.sin(t * np.pi / 180) * np.sin(p)
     YZPhase = round(maxPhase/stepsize)*stepsize
-    maxPhase = 2 * k * d * np.sin(t * np.pi / 180) * np.cos(p - x)
+    maxPhase = k * d * np.sin(t * np.pi / 180) * np.cos(p - x)
     XZPhase = round(maxPhase/stepsize)*stepsize
     phase = 0
     theta = np.linspace(0*-np.pi/2,np.pi/2,40)
     phi = np.linspace(0,2*np.pi,40)
     THETA ,PHI = np.meshgrid(theta,phi)
-    AF = np.exp(1j * phase) * np.exp(1j * k * d * np.sin(THETA) * np.sin(PHI)) + \
+    s = 2.2/1000
+    AF = (np.exp(-1j * YZPhase) * np.exp(1j * k * d * np.sin(THETA) * np.sin(PHI)) + \
          np.exp(1j * YZPhase) * np.exp(-1j * k * d * np.sin(THETA) * np.sin(PHI)) + \
-         np.exp(1j * phase) * np.exp(1j * k * d * np.sin(THETA) * np.cos(PHI - x)) + \
-         np.exp(1j * XZPhase) * np.exp(-1j * k * d * np.sin(THETA) * np.cos(PHI - x))
+         np.exp(-1j * XZPhase) * np.exp(1j * k * d * np.sin(THETA) * np.cos(PHI - x)) + \
+         np.exp(1j * XZPhase) * np.exp(-1j * k * d * np.sin(THETA) * np.cos(PHI - x)))*\
+         (np.sqrt((np.sinc(.5*k*s*np.sin(THETA)*np.sin(PHI))*np.cos(k*s*np.sin(THETA)*np.cos(PHI)/2)*np.cos(PHI))**2 + \
+                 (np.sinc(.5 * k * s * np.sin(THETA) * np.sin(PHI)) * np.cos(
+                     k * s * np.sin(THETA) * np.cos(PHI) / 2) * np.cos(THETA)*np.sin(PHI)) ** 2))
     R = np.absolute(AF)
     X = R * np.sin(THETA) * np.cos(PHI)
     Y = R * np.sin(THETA) * np.sin(PHI)
@@ -163,6 +171,7 @@ ThetaButton5 = Button(buttonAx, "15")
 ThetaButton5.on_clicked(SliderAndThetaUpdate)
 buttonAx = plt.axes([.05,.71,.06,.03], facecolor = "grey")
 ThetaButton6 = Button(buttonAx, "0")
+
 ThetaButton6.on_clicked(SliderAndThetaUpdate)
 buttonAx = plt.axes([.05,.66,.06,.03], facecolor = "grey")
 ThetaButton7 = Button(buttonAx, "-15")
@@ -214,6 +223,7 @@ PhiButton10.on_clicked(SliderAndPhiUpdate)
 buttonAx = plt.axes([.91,.45,.06,.03], facecolor = "grey")
 PhiButton11 = Button(buttonAx, "15")
 PhiButton11.on_clicked(SliderAndPhiUpdate)
+
 
 samp2.on_changed(find_phase_forTheta)
 samp.on_changed(find_phase_forTheta)
